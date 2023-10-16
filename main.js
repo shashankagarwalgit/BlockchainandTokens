@@ -21,7 +21,7 @@ class BlockChain{
     }
 
     createGenesisBlock(){
-        return new Block(0 , Date.now() , "Genesis Block SHA coin" , '0x64');
+        return new Block(0 , "16/10/2023 21:13" , "Genesis Block SHA coin" , '0x64');
     }
 
     getLatestBlock(){
@@ -33,10 +33,24 @@ class BlockChain{
         newBlock.hash = newBlock.calculateHash();
         this.chain.push(newBlock);
     }
+    isChainValid(){
+        for(let i= 1; i<this.chain.length; i++){
+            const currentBlock = this.chain[i];
+            const previousBlock = this.chain[i-1];
+
+            if(currentBlock.hash !== currentBlock.calculateHash()){
+                return false;
+            }
+
+            if(currentBlock.prevHash !== previousBlock.hash){
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 
 let shaCoin = new BlockChain();
-shaCoin.addNewBlock(new Block(1 , "16/10" , "10SHA"));
-shaCoin.addNewBlock(new Block(2 , "17/10" , "155SHA"));
-
-console.log(JSON.stringify(shaCoin , null , 4));
+shaCoin.addNewBlock(new Block(1 , "16/10" , {amnt: 40}));
+shaCoin.addNewBlock(new Block(2 , "17/10" , {amnt: 100}));
