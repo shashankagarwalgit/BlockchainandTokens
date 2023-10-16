@@ -7,12 +7,22 @@ class Block{
         this.data = data;
         this.prevHash = prevHash;
         this.hash = this.calculateHash();
+        this.nonce = 0;
     }
 
     calculateHash(){
-        return SHA256(this.index + this.prevHash + this.timestamp + JSON.stringify(this.data)).toString();
+        return SHA256(this.index + this.prevHash + this.timestamp + JSON.stringify(this.data + this.nonce)).toString();
     }
 
+    mineBlock(difficulty){
+        while(this.hash.substring(0,difficulty) !== Array(difficulty + 1).join("0")){
+            this.nonce++;
+            this.hash = this.calculateHash();   
+        }
+
+        console.log("Block mined:  " + this.hash);
+        console.log("Solution find at: " + this.nonce);
+    }
 }
 
 class BlockChain{
@@ -30,7 +40,7 @@ class BlockChain{
 
     addNewBlock(newBlock){
         newBlock.prevHash = this.getLatestBlock().hash;
-        newBlock.hash = newBlock.calculateHash();
+        newBlock.mineBlock(4);
         this.chain.push(newBlock);
     }
     isChainValid(){
@@ -52,5 +62,9 @@ class BlockChain{
 }
 
 let shaCoin = new BlockChain();
+console.log("mining block 1 ....");
 shaCoin.addNewBlock(new Block(1 , "16/10" , {amnt: 40}));
+
+console.log("\nmining block 2 ....");
 shaCoin.addNewBlock(new Block(2 , "17/10" , {amnt: 100}));
+
