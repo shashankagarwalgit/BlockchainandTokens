@@ -50,9 +50,12 @@ class Block {
     calculateHash() {
         return SHA256(this.index + this.prevHash + this.timestamp + JSON.stringify(this.transactions + this.nonce)).toString();
     }
+    hexToBinary(hex) {
+        return BigInt(`0x${hex}`).toString(6);
+    }
 
     mineBlock(difficulty) {
-        while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")) {
+        while(this.hexToBinary(this.hash).substring(16, 16+(difficulty)) !== Array(difficulty+1).join("0")){
             this.nonce++;
             this.hash = this.calculateHash();
         }
@@ -74,8 +77,9 @@ class BlockChain {
     constructor() {
         this.chain = [this.createGenesisBlock()];
         this.pendingTransactions = [];
-        this.miningReward = 10;
-        this.shashankaddress = 10000000;
+        this.shashankaddress = 1000;
+        this.difficulty = 6;
+        this.miningReward = (this.difficulty/4) * 0.02;
     }
 
     createGenesisBlock() {
@@ -92,7 +96,7 @@ class BlockChain {
         this.pendingTransactions.push(rewardTx);
 
         let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
-        block.mineBlock(4);
+        block.mineBlock(this.difficulty);
 
         console.log("Block successfully mined ");
         this.chain.push(block);
@@ -110,7 +114,7 @@ class BlockChain {
         }
         this.pendingTransactions.push(transaction);
         let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
-        block.mineBlock(Math.floor(Math.random() * 6));
+        block.mineBlock(6);
 
         console.log("Block successfully mined ");
         this.chain.push(block);
@@ -121,7 +125,7 @@ class BlockChain {
     addData(data) {
         this.pendingTransactions.push(data);
         let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
-        block.mineBlock(Math.floor(Math.random() * 5));
+        block.mineBlock(this.difficulty);
 
         console.log("Block MINED for Data");
         this.chain.push(block);
@@ -154,10 +158,10 @@ class BlockChain {
             }
         }
         if(address === shashankaddress.getPublic('hex')) {
-            return this.shashankaddress + balance;
+            return this.shashankaddress + balance + ' SHA';
         }
         else{
-        return balance;
+        return balance + ' SHA';
         }
     }
 

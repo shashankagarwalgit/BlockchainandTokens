@@ -8,7 +8,7 @@ const myKey = ec.keyFromPrivate('bd3b81c0ae2e08fe4c60453ea41cd5b74fe5892b0b11d99
 const myWalletAddress = myKey.getPublic('hex');
 
 let shaCoin = new BlockChain();
-while(shaCoin.getBalanceOfAddress(myWalletAddress) < 30) {
+while(shaCoin.getBalanceOfAddress(myWalletAddress) < 0.09) {
     shaCoin.minePendingTransactions(myWalletAddress);
 }
 console.log(shaCoin.getBalanceOfAddress(myWalletAddress));
@@ -29,9 +29,10 @@ console.log(shaCoin.getBalanceOfAddress(myWalletAddress));
 // console.log("Transaction added");
 // console.log(shaCoin.getLatestBlock());
 
-shaCoin.sendMoney(myKey,myWalletAddress, shashankaddress.getPublic('hex'), 10);
+shaCoin.sendMoney(shashankaddress, shashankaddress.getPublic('hex'),myWalletAddress, 0.1);
 console.log(shaCoin.getBalanceOfAddress(myWalletAddress));
 console.log(shaCoin.getBalanceOfAddress(shashankaddress.getPublic('hex')));
+
 
 
 
