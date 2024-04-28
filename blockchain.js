@@ -39,7 +39,8 @@ class Transaction {
 }
 
 class Block {
-    constructor(timestamp, transactions, prevHash = '') {
+    constructor(blockNo,timestamp, transactions, prevHash = '') {
+        this.blockNo = blockNo;
         this.timestamp = timestamp;
         this.transactions = transactions;
         this.prevHash = prevHash;
@@ -48,14 +49,14 @@ class Block {
     }
 
     calculateHash() {
-        return SHA256(this.index + this.prevHash + this.timestamp + JSON.stringify(this.transactions + this.nonce)).toString();
+        return SHA256(this.blockNo + this.prevHash + this.timestamp + JSON.stringify(this.transactions + this.nonce)).toString();
     }
     hexToBinary(hex) {
-        return BigInt(`0x${hex}`).toString(6);
+        return BigInt(`0x${hex}`).toString(2);
     }
 
     mineBlock(difficulty) {
-        while(this.hexToBinary(this.hash).substring(16, 16+(difficulty)) !== Array(difficulty+1).join("0")){
+        while(this.hexToBinary(this.hash).substring(128, 128+(difficulty)) !== Array(difficulty+1).join("0")){
             this.nonce++;
             this.hash = this.calculateHash();
         }
@@ -78,12 +79,14 @@ class BlockChain {
         this.chain = [this.createGenesisBlock()];
         this.pendingTransactions = [];
         this.shashankaddress = 1000;
-        this.difficulty = 6;
-        this.miningReward = (this.difficulty/4) * 0.02;
+        this.difficulty = 14;
+        this.miningReward = 0.023;
     }
-
+    mindiff(){
+        return Math.floor(Math.random() * 10) + 18;
+    }
     createGenesisBlock() {
-        return new Block("16/10/2023 21:13", "Genesis Block SHA coin", '0x64');
+        return new Block(0,"16/10/2023 21:13", "Genesis Block SHA coin", '0x64');
     }
 
     getLatestBlock() {
@@ -95,8 +98,8 @@ class BlockChain {
         const rewardTx = new Transaction('systembymining', miningRewardAddress, this.miningReward);
         this.pendingTransactions.push(rewardTx);
 
-        let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
-        block.mineBlock(8);
+        let block = new Block(this.chain.length,Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
+        block.mineBlock(this.difficulty);
 
         console.log("Block successfully mined ");
         this.chain.push(block);
@@ -107,14 +110,14 @@ class BlockChain {
 
     addTransaction(transaction) {
         if (!transaction.fromAddress || !transaction.toAddress) {
-            throw new Error('Transaction mujst include from and to address');
+            throw new Error('Transaction must include from and to address');
         }
         if (!transaction.isValid()) {
             throw new Error('Cannot add invalid transaction to chain');
         }
         this.pendingTransactions.push(transaction);
-        let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
-        block.mineBlock(6);
+        let block = new Block(this.chain.length,Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
+        block.mineBlock(14);
 
         console.log("Block successfully mined ");
         this.chain.push(block);
@@ -124,7 +127,7 @@ class BlockChain {
 
     addData(data) {
         this.pendingTransactions.push(data);
-        let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
+        let block = new Block(this.chain.length,Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
         block.mineBlock(this.difficulty);
 
         console.log("Block MINED for Data");
@@ -158,10 +161,10 @@ class BlockChain {
             }
         }
         if(address === shashankaddress.getPublic('hex')) {
-            return this.shashankaddress + balance + ' SHA';
+            return this.shashankaddress + balance;
         }
         else{
-        return balance + ' SHA';
+        return balance;
         }
     }
 

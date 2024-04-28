@@ -3,17 +3,14 @@ const sha256 = require('crypto-js/sha256');
 const { BlockChain, Transaction ,shashankaddress} = require('./blockchain');
 const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
-const app = express();
 const fs = require('fs');
+const app = express();
 
 const randWork = sha256(Date.now().toString());
 let shaCoin = new BlockChain();
 
-function mineNextBlock(value,pubaddr) {
-    while(value>0) {
-        shaCoin.minePendingTransactions(pubaddr);
-        value--;
-    }
+if(fs.existsSync('blockchain.json')) {
+    shaCoin.chain = JSON.parse(fs.readFileSync('blockchain.json'));
 }
 
 app.use(express.json());
@@ -22,21 +19,21 @@ app.get("/", (req, res) => {
 });
 
 app.post("/mining", async (req, res) => {
-    const minedBlockData = req.body; // Assuming the client sends the mined block data in the request body
+    var minedBlockData = req.body; // Assuming the client sends the mined block data in the request body
 
         shaCoin.chain.push(minedBlockData);
         res.json({ message: "Block added successfully" });
-        console.log(`Block from client added successfully ${minedBlockData.hash}`);
-    
+        console.log(`Block from client added successfully ${JSON.stringify(minedBlockData,null,4)}`);
+        fs.writeFileSync('blockchain.json', JSON.stringify(shaCoin.chain, null, 4));
 });
 
-app.get("/mine/:no/:addr", async (req, res) => {
-    mineNextBlock(req.params.no,req.params.addr);
-    res.json(await shaCoin.getLatestBlock());
+app.get("/difficulty", async (req,res)=> {
+    res.json(shaCoin.mindiff());
 });
 
 app.get("/balance/:address", async (req,res)=>{
-    res.send(await shaCoin.getBalanceOfAddress(req.params.address));
+    console.log(shaCoin.getBalanceOfAddress(req.params.address));
+    res.json(await shaCoin.getBalanceOfAddress(req.params.address));
 })
 
 app.get("/acc", async (req, res) => {
@@ -60,9 +57,6 @@ app.get("/latestblock", async (req,res)=>{
     res.json(shaCoin.getLatestBlock());
 });
 
-app.get("/chainValid", async (req,res)=>{
-    res.json(shaCoin.isChainValid());
-});
 app.listen(3000, () => {
     console.log("Server started at 3000");
 
