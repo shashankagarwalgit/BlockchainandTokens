@@ -6,7 +6,6 @@ const ec = new EC('secp256k1');
 const fs = require('fs');
 const app = express();
 
-const randWork = sha256(Date.now().toString());
 let shaCoin = new BlockChain();
 
 if(fs.existsSync('blockchain.json')) {
@@ -15,7 +14,7 @@ if(fs.existsSync('blockchain.json')) {
 
 app.use(express.json());
 app.get("/", (req, res) => {
-    res.send("Welcome to blockchain of SHA coin");
+    res.json("Welcome to blockchain of SHA coin");
 });
 
 app.post("/mining", async (req, res) => {
@@ -29,6 +28,10 @@ app.post("/mining", async (req, res) => {
 
 app.get("/difficulty", async (req,res)=> {
     res.json(shaCoin.mindiff());
+});
+
+app.get("/reward", async (req,res)=> {
+    res.json(await shaCoin.miningReward);
 });
 
 app.get("/balance/:address", async (req,res)=>{

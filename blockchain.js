@@ -83,7 +83,7 @@ class BlockChain {
         this.miningReward = 0.023;
     }
     mindiff(){
-        return Math.floor(Math.random() * 10) + 18;
+        return 20;
     }
     createGenesisBlock() {
         return new Block(0,"16/10/2023 21:13", "Genesis Block SHA coin", '0x64');

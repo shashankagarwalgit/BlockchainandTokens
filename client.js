@@ -1,25 +1,27 @@
-const { BlockChain, Transaction, Block } = require('./blockchain');
+const { BlockChain, Transaction, Block, shashankaddress } = require('./blockchain');
 const http = require('http');
+const https = require('https');
 
 if (process.argv[2] == null && process.argv[3] == null) {
     console.log("Please provide server url and mining reward address \nExiting...");
     process.exit(0);
 }
 
-const serverUrl = process.argv[2];
+const serverUrl = process.argv[2].toString();
 const miningRewardAddress = process.argv[3].toString();
-const blockchain = new BlockChain();
 
-// Function to send HTTP POST request
+const blockchain = new BlockChain();
+// Function to send HTTP/HTTPS POST request
 function postData(url, data) {
     return new Promise((resolve, reject) => {
         // Parse the URL
         const parsedUrl = new URL(url);
+        const protocol = parsedUrl.protocol === 'https:' ? https : http;
 
         const options = {
             hostname: parsedUrl.hostname,
-            port: parsedUrl.port || 80,
-            path: parsedUrl.pathname, // Use the pathname from the parsed URL
+            port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+            path: parsedUrl.pathname,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -27,7 +29,7 @@ function postData(url, data) {
             }
         };
 
-        const req = http.request(options, (res) => {
+        const req = protocol.request(options, (res) => {
             let body = '';
             res.on('data', (chunk) => {
                 body += chunk;
@@ -46,7 +48,6 @@ function postData(url, data) {
     });
 }
 
-// Function to send mined block data to the server
 async function sendMinedBlock(blockData) {
     try {
         const response = await postData(`${serverUrl}/mining`, JSON.stringify(blockData));
@@ -56,10 +57,14 @@ async function sendMinedBlock(blockData) {
     }
 }
 
-// Function to send HTTP GET request
+// Function to send HTTP/HTTPS GET request
 function getData(url) {
     return new Promise((resolve, reject) => {
-        http.get(url, (res) => {
+        // Parse the URL
+        const parsedUrl = new URL(url);
+        const protocol = parsedUrl.protocol === 'https:' ? https : http;
+
+        protocol.get(url, (res) => {
             let data = '';
             res.on('data', (chunk) => {
                 data += chunk;
@@ -72,24 +77,24 @@ function getData(url) {
         });
     });
 }
-
-// Function to mine a block
 async function mineBlock() {
     try {
         const latestBlock = await getData(`${serverUrl}/latestblock`);
         const lengthofblockchain = await getData(`${serverUrl}/blockchain`);
         var difficulty = await getData(`${serverUrl}/difficulty`);
+        const reward = await getData(`${serverUrl}/reward`);
         console.log("current length of blockchain: ",lengthofblockchain.length);
         
-        const rewardTx = new Transaction('systembymining', miningRewardAddress, blockchain.miningReward);
+        const rewardTx = new Transaction('systembymining', miningRewardAddress, parseFloat(reward));
         blockchain.pendingTransactions.push(rewardTx);
 
-        const block = new Block(lengthofblockchain.length, Date.now(), blockchain.pendingTransactions, latestBlock.hash);
+        let block = new Block(lengthofblockchain.length, Date.now(), blockchain.pendingTransactions, latestBlock.hash);
         console.log("difficulty:", difficulty);
         block.mineBlock(difficulty);
 
         console.log("Block successfully mined ");
         sendMinedBlock(block);
+        blockchain.pendingTransactions = [];
     } catch (error) {
         console.error('Error mining block:', error.message);
     }
