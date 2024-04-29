@@ -101,16 +101,4 @@ async function mineBlock() {
 }
 
 console.log("Getting work from server and starting mining...");
-// while (process.argv.length >= 3) {
-//     mineBlock();
-// }
-async function startMining() {
-    try {
-        await mineBlock();
-        process.nextTick(startMining);
-    } catch (error) {
-        console.error('Error mining block:', error.message);
-    }
-}
-
-startMining();
+setInterval(mineBlock, 3000);

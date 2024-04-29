@@ -27,7 +27,7 @@ app.post("/mining", async (req, res) => {
 });
 
 app.get("/difficulty", async (req,res)=> {
-    res.json(shaCoin.adjustDifficulty(shaCoin.calculateAverageBlockTime(shaCoin.chain)));
+    res.json(shaCoin.mindiff());
 });
 
 app.get("/reward", async (req,res)=> {
@@ -35,9 +35,7 @@ app.get("/reward", async (req,res)=> {
 });
 
 app.get("/balance/:address", async (req,res)=>{
-    shaCoin.chain = JSON.parse(fs.readFileSync('blockchain.json'));
     console.log(shaCoin.getBalanceOfAddress(req.params.address));
-    
     res.json(await shaCoin.getBalanceOfAddress(req.params.address));
 })
 
