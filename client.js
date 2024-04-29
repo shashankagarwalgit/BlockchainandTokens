@@ -101,4 +101,4 @@ async function mineBlock() {
 }
 
 console.log("Getting work from server and starting mining...");
-setInterval(mineBlock, 3000);
+setInterval(mineBlock, 5000);
