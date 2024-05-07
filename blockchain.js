@@ -3,6 +3,7 @@ const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
 
 const shashankaddress = ec.keyFromPrivate('94c12671ec82583f668f76cf916d2945707add0c3ba3d37668271b48b2b321c2');
+const systemaddress = ec.keyFromPrivate('21143f6a2c87b55c0a7bfdee5dd119cbd47255a5f666f40241eab98f16f484aa');
 
 class Transaction {
     constructor(fromAddress, toAddress, amount) {
@@ -92,9 +93,9 @@ class BlockChain {
     constructor() {
         this.chain = [this.createGenesisBlock()];
         this.pendingTransactions = [];
-        this.shashankaddress = 1000;
-        this.difficulty = 500;
-        this.miningReward = 0.023;
+        this.systemaddress = 230000000;
+        this.difficulty = 3000;
+        this.miningReward = 0.23;
         this.TARGET_BLOCK_TIME = 300; // Target block time in milliseconds (e.g., 10 minutes)
         this.MAX_DIFFICULTY = 100000;
     }
@@ -130,7 +131,8 @@ class BlockChain {
     }
     minePendingTransactions(miningRewardAddress) {
 
-        const rewardTx = new Transaction('systembymining', miningRewardAddress, this.miningReward);
+        const rewardTx = new Transaction(systemaddress.getPublic('hex'), miningRewardAddress, this.miningReward);
+        rewardTx.signTransaction(systemaddress);
         this.pendingTransactions.push(rewardTx);
 
         let block = new Block(this.chain.length, Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
@@ -195,8 +197,8 @@ class BlockChain {
                 }
             }
         }
-        if (address === shashankaddress.getPublic('hex')) {
-            return this.shashankaddress + balance;
+        if (address === systemaddress.getPublic('hex')) {
+            return this.systemaddress + balance;
         }
         else {
             return balance;
@@ -230,3 +232,4 @@ module.exports.BlockChain = BlockChain;
 module.exports.Transaction = Transaction;
 module.exports.Block = Block;
 module.exports.shashankaddress = shashankaddress;
+module.exports.systemaddress = systemaddress;
