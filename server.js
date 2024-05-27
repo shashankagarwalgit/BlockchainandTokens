@@ -39,7 +39,22 @@ app.get("/balance/:address", async (req,res)=>{
     console.log(shaCoin.getBalanceOfAddress(req.params.address));
     
     res.json(await shaCoin.getBalanceOfAddress(req.params.address));
-})
+});
+
+app.post("/sendMoney", async (req,res)=>{
+    var formData = req.body;
+    const key = ec.keyFromPrivate(await formData.privateKey.toString());
+    const myWalletAddress = key.getPublic('hex');
+    if(shaCoin.getBalanceOfAddress(myWalletAddress) < parseFloat(formData.amount)){
+        res.json({message: "Insufficient balance"});
+        return;
+    }
+    const tx = new Transaction(myWalletAddress, await formData.toAddress.toString(), await parseFloat(formData.amount));
+    tx.signTransaction(key);
+    shaCoin.addTransaction(tx);
+    res.json({ message: "Transaction added successfully", transaction: tx });
+    fs.writeFileSync('blockchain.json', JSON.stringify(shaCoin.chain, null, 4));
+});
 
 app.get("/acc", async (req, res) => {
     const key = ec.genKeyPair();
@@ -54,8 +69,21 @@ app.get("/blockchain", async (req,res)=>{
     res.json(await shaCoin.chain);
 });
 
+app.get("/tx/:txhash", async (req,res)=>{
+    for(let block of shaCoin.chain){
+        if(block.hash == req.params.txhash){
+            res.json(await block);
+            return;
+        }
+    }
+    res.json({message: "Block not found"});
+});
+
 app.get("/block/:no", async (req,res)=>{
-    res.json(await shaCoin.chain[req.params.no - 1]);
+    if(req.params.no >= shaCoin.chain.length){
+        res.json({message: "Block not found"});
+    }
+    res.json(await shaCoin.chain[req.params.no]);
 });
 
 app.get("/latestblock", async (req,res)=>{

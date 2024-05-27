@@ -50,11 +50,11 @@ class Block {
     }
 
     calculateHash() {
-        return '0x' + SHA256(this.blockNo + this.prevHash + this.timestamp + JSON.stringify(this.transactions + this.nonce)).toString();
+        return '0x' + SHA256(SHA256(this.blockNo + this.prevHash + this.timestamp + JSON.stringify(this.transactions + this.nonce)).toString()).toString();
     }
-    hexToBinary(hex) {
-        return BigInt(`0x${hex}`).toString(2);
-    }
+    // hexToBinary(hex) {
+    //     return BigInt(`0x${hex}`).toString(2);
+    // }
     calculateTarget(difficulty) {
         // For SHA-256, the maximum hash value is (2^256 - 1)
         const hashmax = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
@@ -63,15 +63,11 @@ class Block {
     }
 
     mineBlock(difficulty) {
-        // while(this.hexToBinary(this.hash).substring(128, 128+(difficulty)) !== Array(difficulty+1).join("0")){
-        //     this.nonce++;
-        //     this.hash = this.calculateHash();
-        // }
         let target = this.calculateTarget(difficulty);
 
         while (BigInt(this.hash) >= target) {
             this.nonce++;
-            this.hash = this.calculateHash();
+            this.hash = '0x' + SHA256(this.calculateHash() + this.nonce).toString();
             // console.log(blockHash); 
             // console.log(BigInt(blockHash));
         }
@@ -79,6 +75,7 @@ class Block {
         console.log("Block mined:  " + this.hash);
         // console.log("Solution find at: " + this.nonce);
     }
+    
     hasValidTransactions() {
         for (const tx of this.transactions) {
             if (!tx.isValid()) {
@@ -93,11 +90,11 @@ class BlockChain {
     constructor() {
         this.chain = [this.createGenesisBlock()];
         this.pendingTransactions = [];
-        this.systemaddress = 230000000;
-        this.difficulty = 3000;
-        this.miningReward = 0.23;
+        this.systemaddress = 2300000;
+        this.difficulty = 20000;
+        this.miningReward = 0.023;
         this.TARGET_BLOCK_TIME = 300; // Target block time in milliseconds (e.g., 10 minutes)
-        this.MAX_DIFFICULTY = 100000;
+        this.MAX_DIFFICULTY = 1000000;
     }
 
     createGenesisBlock() {
@@ -114,6 +111,7 @@ class BlockChain {
         }
         const totalBlockTime = latestBlocks[4].timestamp - latestBlocks[0].timestamp;
         const averageBlockTime = totalBlockTime / (1000 * latestBlocks.length);
+        console.log("Average block time: " + Math.floor(averageBlockTime) + " seconds");
         return Math.floor(averageBlockTime);
     }
 
@@ -121,10 +119,10 @@ class BlockChain {
         var diff = 108;
         // Adjust the difficulty level based on the average block time
         if (averageBlockTime < this.TARGET_BLOCK_TIME) {
-            diff = Math.min(this.MAX_DIFFICULTY, this.difficulty + 101); // Increase difficulty if blocks are mined too quickly
+            diff = Math.min(this.MAX_DIFFICULTY, this.difficulty + 501); // Increase difficulty if blocks are mined too quickly
             this.difficulty = diff;
         } else {
-            diff = Math.max(1, this.difficulty - 2); // Decrease difficulty if blocks are mined too slowly
+            diff = Math.max(1, this.difficulty - 50); // Decrease difficulty if blocks are mined too slowly
             this.difficulty = diff;
         }
         return this.difficulty;
@@ -154,7 +152,7 @@ class BlockChain {
         }
         this.pendingTransactions.push(transaction);
         let block = new Block(this.chain.length, Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
-        block.mineBlock(14);
+        block.mineBlock(this.difficulty);
 
         console.log("Block successfully mined ");
         this.chain.push(block);
@@ -176,7 +174,7 @@ class BlockChain {
         tx.signTransaction(privKey);
         this.addTransaction(tx);
         console.log("Transaction send successfully ");
-        console.log(tx);
+        // console.log(tx);
     }
 
     getBalanceOfAddress(address) {

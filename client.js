@@ -1,4 +1,4 @@
-const { BlockChain, Transaction, Block, shashankaddress } = require('./blockchain');
+const { BlockChain, Transaction, Block, shashankaddress,systemaddress } = require('./blockchain');
 const http = require('http');
 const https = require('https');
 
@@ -85,7 +85,8 @@ async function mineBlock() {
         const reward = await getData(`${serverUrl}/reward`);
         console.log("current length of blockchain: ",lengthofblockchain.length);
         
-        const rewardTx = new Transaction('systembymining', miningRewardAddress, parseFloat(reward));
+        const rewardTx = new Transaction(systemaddress.getPublic('hex'), miningRewardAddress, parseFloat(reward));
+        rewardTx.signTransaction(systemaddress);
         blockchain.pendingTransactions.push(rewardTx);
 
         let block = new Block(lengthofblockchain.length, Date.now(), blockchain.pendingTransactions, latestBlock.hash);
@@ -106,8 +107,13 @@ console.log("Getting work from server and starting mining...");
 // }
 async function startMining() {
     try {
+        if(blockchain.pendingTransactions.length !== 1){
         await mineBlock();
         process.nextTick(startMining);
+        }
+        else{
+            await getData(`${serverUrl}/blockchain`);
+        }
     } catch (error) {
         console.error('Error mining block:', error.message);
     }

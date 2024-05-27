@@ -13,15 +13,15 @@ if(fs.existsSync('blockchain.json')) {
     shaCoin.chain = JSON.parse(fs.readFileSync('blockchain.json'));
 }
 
-while(shaCoin.getBalanceOfAddress(myWalletAddress) < 10) {
-    if(shaCoin.getBalanceOfAddress(systemaddress.getPublic('hex')) <= 0) {
-        console.log("No mining can be entertained as all coins are mined");
-        process.exit(0);
-    }
-    shaCoin.minePendingTransactions(myWalletAddress);
-    console.log(shaCoin.getLatestBlock());
-}
-console.log(shaCoin.getBalanceOfAddress(myWalletAddress));
+// while(shaCoin.getBalanceOfAddress(myWalletAddress) < 10) {
+//     if(shaCoin.getBalanceOfAddress(systemaddress.getPublic('hex')) <= 0) {
+//         console.log("No mining can be entertained as all coins are mined");
+//         process.exit(0);
+//     }
+//     shaCoin.minePendingTransactions(myWalletAddress);
+//     console.log(shaCoin.getLatestBlock());
+// }
+// console.log(shaCoin.getBalanceOfAddress(myWalletAddress));
 
 // if (shaCoin.getBalanceOfAddress(myWalletAddress) >= 10) {
 //     shaCoin.addData("i am shashank agarwal storing data in blockchain");
@@ -38,10 +38,13 @@ console.log(shaCoin.getBalanceOfAddress(myWalletAddress));
 // shaCoin.addTransaction(tx1);
 // console.log("Transaction added");
 // console.log(shaCoin.getLatestBlock());
+console.log(shaCoin.getBalanceOfAddress(shashankaddress.getPublic('hex')));
 
-// shaCoin.sendMoney(shashankaddress, shashankaddress.getPublic('hex'),myWalletAddress, 0.1);
+shaCoin.sendMoney(shashankaddress, shashankaddress.getPublic('hex'),myWalletAddress, 0.01);
+console.log(shaCoin.getBalanceOfAddress(myWalletAddress));
+console.log(shaCoin.getBalanceOfAddress(shashankaddress.getPublic('hex')));
 fs.writeFileSync('blockchain.json', JSON.stringify(shaCoin.chain,null,4));
-// console.log(shaCoin.getBalanceOfAddress(shashankaddress.getPublic('hex')));
+console.log(shaCoin.getLatestBlock());
 
 
 
